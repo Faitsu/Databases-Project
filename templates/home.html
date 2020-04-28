@@ -1,15 +1,14 @@
 <html>
 <head>
+	<h1>WELCOME {{username}}</h1>  
 </head>
 <body>
 <form action="/post" method="POST" enctype="multipart/form-data">
-	<h1>Welcome {{username}}</h1> 
-
 
 	<p>POST SOMETHING! :D</p>
 
 	<!-- Prompt user for image file -->
-	<label for="avatar">Choose a profile picture (JPEG/JPG/PNG):</label>
+	<label for="avatar">Choose a picture (JPEG/JPG/PNG):</label>
 	<input type="file"
        id="avatar" name="filePath_img"
 	   accept="image/png, image/jpeg, image/jpg"></br>
@@ -41,27 +40,14 @@
 	
 	<br><br>
 	<input type="submit" value = Post />
-</form>
 
-<br>
-
-<form action="/makeGroup" method="POST" enctype="multipart/form-data">
-	<p>CREATE A GROUP!</p>
-
-	<label for="groupName">Group Name:</label><br>
-	<input type="text" name="groupName" placeholder="Enter group name" required/> <br><br>
-	<label id="groupName" for="description">Group Description:</label><br>
-	<textarea id="description" name="description" rows="4" cols="50" placeholder="Enter description"></textarea></br>
-
-	<br>
-	<input type="submit" value = 'Make Group' />
-
-	{% if error %}
-		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% if error1 %}
+		<p class="error1"><strong>Error</strong> {{error1}}</p>
 	{% endif %}
 </form>
 
 <br>
+
 
 <style type="text/css">
 	table, th, td{
@@ -69,11 +55,13 @@
 	}
 </style> 
 
+
+
 <p>YOUR POSTS:</p>
 
 <table>
 	<th>pID</th>
-	<th>ImagePath</th>
+	<th>Posted Image</th>
 	<th>Caption</th>
 	<th>Posting Date</th>
 	<th>Who Can View</th>
@@ -81,7 +69,7 @@
 {% for line in posts %}
 	<tr>
 		<td>{{line.pID}}</td>
-		<td>{{line.filePath}}</td>
+		<td><img src="{{url_for('uploaded_file', filename=line.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
 		<td>{{line.caption}}</td>
 		<td>{{line.postingDate}}</td>
 		<td>
@@ -95,48 +83,40 @@
 {% endfor %}
 </table>
 
+<br>
+<br>
 
-
-<p>YOUR GROUPS:</p>
+<p>YOUR FEED:</p>
 
 <table>
-	<th>Group Name</th>
-	<th>Description of group</th>
+	<th>pID</th>
+	<th>Posted Image</th>
+	<th>Caption</th>
+	<th>Posting Date</th>
+	<th>Posted By</th>
 
-{% for group in groups %}
+{% for line in sharedPhotos %}
 	<tr>
-		<td>
-			{{group.groupName}}
-		</td>
-		<td>
-			{{group.description}}
-		</td>
+		<td>{{line.pID}}</td>
+		<td><img src="{{url_for('uploaded_file', filename=line.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
+		<td>{{line.caption}}</td>
+		<td>{{line.postingDate}}</td>
+		<td>{{line.poster}}</td>
 	</tr>
 {% endfor %}
 </table>
 
+<br>
 
 
-<p>GROUPS YOU ARE IN:</p>
-
-<table>
-	<th>Group Name</th>
-	<th>Creator of Group</th>
-
-{% for group in belongsToGroup %}
-	<tr>
-		<td>
-			{{group.groupName}}
-		</td>
-		<td>
-			{{group.groupCreator}}
-		</td>
-	</tr>
-{% endfor %}
-</table>
-
-
-
+<br>
+<a href="/manageGroups">MANAGE GROUP ACTIVITIES</a>
+<br>
+<br>
+<a href="/tag">TAG A PHOTO</a>
+<br>
+<a href="/tagPending">MANAGE PENDING TAGS</a>
+<br>
 <br>
 <a href="/logout">Logout</a>
 

@@ -8,8 +8,6 @@ CREATE TABLE Person (
         PRIMARY KEY (username)
 );
 
-
-
 CREATE TABLE Photo (
         pID INT AUTO_INCREMENT,
         postingDate DATETIME,

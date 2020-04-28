@@ -1,0 +1,89 @@
+<html>
+
+<head>
+    <h1>MANAGE GROUP ACTIVITIES</h1>
+</head> 
+
+<body>
+    <form action="/makeGroup" method="POST" enctype="multipart/form-data">
+
+        <p>CREATE A GROUP!</p>
+    
+        <label for="groupName">Group Name:</label><br>
+        <input type="text" name="groupName" placeholder="Enter group name" required/> <br><br>
+        <label id="groupName" for="description">Group Description:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50" placeholder="Enter description"></textarea></br>
+    
+
+        <p>Pick who you want to be in your group:</p>
+
+        {% for user in users %}
+            <input id="users" type="checkbox" name="chosenMem" value="{{user.username}}">{{user.username}}</input><br><br>
+        {% endfor %}
+
+
+        <br>
+        <input type="submit" value = 'Make Group' />
+    
+        {% if error %}
+            <p class="error"><strong>Error</strong> {{error}}</p>
+        {% endif %}
+
+    </form>
+
+    <br> 
+
+    <style type="text/css">
+        table, th, td{
+            border: 1px solid black;
+        }
+    </style> 
+
+
+    <p>YOUR GROUPS:</p>
+
+    <table>
+        <th>Group Name</th>
+        <th>Description of group</th>
+
+    {% for group in groups %}
+        <tr>
+            <td>
+                {{group.groupName}}
+            </td>
+            <td>
+                {{group.description}}
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    <br>
+
+    <p>GROUPS YOU ARE IN:</p>
+
+    <table>
+        <th>Group Name</th>
+        <th>Creator of Group</th>
+
+    {% for group in belongsToGroup %}
+        <tr>
+            <td>
+                {{group.groupName}}
+            </td>
+            <td>
+                {{group.groupCreator}}
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+    
+    <br> 
+    <br>
+    <a href="/home">Go back</a>
+    <br>
+    <a href="/logout">Logout</a>
+
+</body>
+
+</html>

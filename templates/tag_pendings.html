@@ -1,0 +1,73 @@
+<html>
+
+<head>
+    <h1>MANAGE AND VIEW TAGGED PHOTOS</h1>
+</head>
+
+<body>
+    <form action="/approveTag" method="POST" enctype="multipart/form-data">
+
+        <p>Approve or disprove the following tags (or do nothing):</p>
+
+        {% for tag in tags %}
+
+            <label for="tags">pID: {{tag.pID}}</label><br>
+
+            <img src="{{url_for('uploaded_file', filename=tag.filePath)}}" alt="Uploaded Image" width="500" height="333"><br>
+            <label for="tags">Posting Date: {{tag.postingDate}}</label><br>
+            <label for="tags">Caption: {{tag.caption}}</label><br><br>
+            
+            <div>
+                <input id="tags" type="checkbox" name="decisionY" value="{{tag.pID}}">Approve</input>
+                <input id="tags" type="checkbox" name="decisionN" value="{{tag.pID}}">Decline</input>
+            </div>
+            <br>
+
+        {% endfor %}
+    
+        <br><br>
+        <input type="submit" value = Confirm />
+    
+    </form>
+
+    <br>
+
+    <style type="text/css">
+        table, th, td{
+            border: 1px solid black;
+        }
+    </style> 
+
+<p>Photos you are tagged in (approved tags):</p>
+
+<table>
+	<th>pID</th>
+    <th>Posted Image</th>
+    <th>Caption</th>
+    <th>Posted By</th>
+	<th>Posting Date</th>
+
+{% for line in approvedTags %}
+	<tr>
+		<td>{{line.pID}}</td>
+		<td><img src="{{url_for('uploaded_file', filename=line.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
+		<td>{{line.caption}}</td>
+        <td>{{line.poster}}</td>
+        <td>{{line.postingDate}}</td>
+	</tr>
+{% endfor %}
+</table>
+
+<br>
+    
+    <br>
+    <a href="/tag">TAG A PHOTO</a>
+    <br>
+    <br>
+    <a href="/home">Go back</a>
+    <br>
+    <a href="/logout">Logout</a>
+
+</body>
+
+</html>

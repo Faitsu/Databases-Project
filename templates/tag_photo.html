@@ -1,0 +1,38 @@
+<html>
+
+<head>
+    <h1>TAG FRIENDS IN PHOTOS!</h1>
+</head>
+
+<body>
+    <form action="/tagPhoto" method="POST" enctype="multipart/form-data">
+        {% if error %}
+		    <p class="error"><strong>Error</strong> {{error}}</p>
+        {% endif %}
+        
+        <label for="photos">Choose a photo:</label><br><br>
+        
+        {% for photo in photos %}
+            <input type="radio" value="{{photo.pID}}" name="photoChosen">
+                <label for="photos">Posted By: {{photo.poster}} (pID: {{photo.pID}})</label><br>
+                <img src="{{url_for('uploaded_file', filename=photo.filePath)}}" alt="Uploaded Image" width="500" height="333">
+            </input><br><br>
+        {% endfor %}
+
+
+        <p>Who do you want to tag?</p>
+        <input type="text" name="tagUser" placeholder="Enter username" required/> <br>
+
+
+        <br>
+        <input type="submit" value = 'Tag Photo' />
+    </form>
+
+    <br>
+    <a href="/home">Go back</a>
+    <br>
+    <a href="/logout">Logout</a>
+
+</body>
+
+</html>
