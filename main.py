@@ -1,28 +1,27 @@
 import datetime
 import os
 
-import mysql.connector
-from mysql.connector import Error
+import hashlib  # for salting to work
 
-import hashlib # for salting to work
-
-#Import Flask Library
+# Import Flask Library
 from flask import Flask, render_template, request, session, url_for, redirect, flash, send_from_directory
 from werkzeug.utils import secure_filename
-import pymysql.cursors # for interacting with database
+import pymysql.cursors  # for interacting with database
 
 # Path for uploads folder
+
 UPLOAD_FOLDER = '/Users/erica/Databases-Project/uploads'
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 # Salt defined
 SALT = 'moira11QYC22erica33'
 
-#Initialize the app from Flask
+# Initialize the app from Flask
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-#Configure MySQL
+# Configure MySQL
 conn = pymysql.connect(host='localhost',
                        port = 3308,
                        user='root',
@@ -31,73 +30,78 @@ conn = pymysql.connect(host='localhost',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-#Define a route to hello function
+
+# Define a route to hello function
 @app.route('/')
 def hello():
     return render_template('index.html')
 
-#Define route for login
+
+# Define route for login
 @app.route('/login')
 def login():
     return render_template('login.html')
 
-#Define route for register
+
+# Define route for register
 @app.route('/register')
 def register():
     return render_template('register.html')
 
-#Authenticates the login
+
+# Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
-    #grabs information from the forms
+    # grabs information from the forms
     username = request.form['username']
     password = request.form['password'] + SALT
 
     hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-    #cursor used to send queries
+    # cursor used to send queries
     cursor = conn.cursor()
-    #executes query
+    # executes query
     query = 'SELECT * FROM Person WHERE username = %s and password = %s'
     cursor.execute(query, (username, hashed_password))
-    #stores the results in a variable
+    # stores the results in a variable
     data = cursor.fetchone()
-    #use fetchall() if you are expecting more than 1 data row
+    # use fetchall() if you are expecting more than 1 data row
     cursor.close()
     error = None
-    if(data):
-        #creates a session for the the user
-        #session is a built in
+    if (data):
+        # creates a session for the the user
+        # session is a built in
         session['username'] = data['username']
         return redirect(url_for('home'))
     else:
-        #returns an error message to the html page
+        # returns an error message to the html page
         error = 'Invalid login or username'
         return render_template('login.html', error=error)
 
-#Authenticates the register
+
+# Authenticates the register
 @app.route('/registerAuth', methods=['GET', 'POST'])
 def registerAuth():
-    #grabs information from the forms
+    # grabs information from the forms
     username = request.form['username']
     password = request.form['password'] + SALT
     firstName = request.form['firstName']
     lastName = request.form['lastName']
     email = request.form['email']
 
-    #cursor used to send queries
+    # cursor used to send queries
     cursor = conn.cursor()
-    #executes query
+    # executes query
     query = 'SELECT * FROM Person WHERE username = %s'
     cursor.execute(query, (username))
-    #stores the results in a variable
+    # stores the results in a variable
     data = cursor.fetchone()
-    #use fetchall() if you are expecting more than 1 data row
+    # use fetchall() if you are expecting more than 1 data row
     error = None
-    if(data):
-        #If the previous query returns data, then user exists
+    if (data):
+        # If the previous query returns data, then user exists
         error = "User already exists"
-        return render_template('register.html', error = error)
+        return render_template('register.html', error=error)
     else:
         hashed_password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         ins = 'INSERT INTO Person VALUES(%s, %s, %s, %s, %s)'
@@ -106,13 +110,14 @@ def registerAuth():
         cursor.close()
         return render_template('index.html')
 
+
 # Define a route to home
-@app.route('/home') 
-def home(error = ''): 
+@app.route('/home')
+def home(error=''):
     username = session['username']
     cursor = conn.cursor()
 
-    # query for posted photos (user posted) 
+    # query for posted photos (user posted)
     query = 'SELECT pID, poster, filePath, caption, allFollowers, postingDate FROM Photo WHERE poster = %s ORDER BY postingDate DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
@@ -124,7 +129,7 @@ def home(error = ''):
     groupsToShare = cursor.fetchall()
     conn.commit()
 
-    # query for photos user can view 
+    # query for photos user can view
     query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
     cursor.execute(query, (username, username))
     sharedPhotos = cursor.fetchall()
@@ -132,26 +137,31 @@ def home(error = ''):
 
     cursor.close()
 
-    if (error == ''): # no errors
-        return render_template('home.html', username=username, sharedPhotos=sharedPhotos, groups=groupsToShare, posts=data)
-    else: 
-        return render_template('home.html', username=username, sharedPhotos=sharedPhotos, groups=groupsToShare, posts=data, error=error)
+    if (error == ''):  # no errors
+        return render_template('home.html', username=username, sharedPhotos=sharedPhotos, groups=groupsToShare,
+                               posts=data)
+    else:
+        return render_template('home.html', username=username, sharedPhotos=sharedPhotos, groups=groupsToShare,
+                               posts=data, error=error)
+
 
 # Retrieve image from uploads folder (static)
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory("uploads", filename)
 
+
 # To check if filename is of appropriate type
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 # Share photo with groups
 def share_with_groups(pID, filePath, caption, poster, groupNames):
     cursor = conn.cursor()
 
-    for group in groupNames:        
+    for group in groupNames:
         # inserting to sharedWith
         ins2 = 'INSERT INTO SharedWith (pID, groupName, groupCreator) VALUES(%s, %s, %s)'
         cursor.execute(ins2, (pID, group, poster))
@@ -159,6 +169,7 @@ def share_with_groups(pID, filePath, caption, poster, groupNames):
 
     cursor.close()
     return redirect(url_for('home'))
+
 
 # Posting & sharing photos
 @app.route('/post', methods=['GET', 'POST'])
@@ -174,10 +185,10 @@ def post():
             return home('INVALID: You must pick who to share photo with!')
 
         # change flag depending on who the photo is shared with
-        if(allFollowers_temp == 'followers'):
-            allFollowers = 1 # all followers 
+        if (allFollowers_temp == 'followers'):
+            allFollowers = 1  # all followers
         else:
-            allFollowers = 0 # members of friend group
+            allFollowers = 0  # members of friend group
 
         postingDate = datetime.datetime.now()
         groupNames = request.form.getlist('groups')
@@ -209,7 +220,7 @@ def post():
         if filePath and allowed_file(filePath.filename):
             filename = secure_filename(filePath.filename)
 
-            # update filename to be pID 
+            # update filename to be pID
             nameSplit = filename.split('.')
             nameSplit[0] = str(pID)
             filename_update = '.'.join(nameSplit)
@@ -230,9 +241,10 @@ def post():
 
     return redirect(url_for('home'))
 
+
 # Define route for manage_group
 @app.route('/manageGroups')
-def group(error = ''):
+def group(error=''):
     username = session['username']
     cursor = conn.cursor()
 
@@ -253,10 +265,11 @@ def group(error = ''):
 
     cursor.close()
 
-    if (error == ''): # no errors
+    if (error == ''):  # no errors
         return render_template('manage_group.html', users=users, groups=groups, belongsToGroup=groups1)
-    else: 
+    else:
         return render_template('manage_group.html', users=users, groups=groups, belongsToGroup=groups1, error=error)
+
 
 # Create a group
 @app.route('/makeGroup', methods=['GET', 'POST'])
@@ -264,7 +277,7 @@ def makeGroup():
     username = session['username']
     groupName = request.form['groupName']
     description = request.form['description']
-    
+
     chosenMem = request.form.getlist('chosenMem')
 
     cursor = conn.cursor()
@@ -273,7 +286,7 @@ def makeGroup():
     data = cursor.fetchone()
 
     error = None
-    if(data):
+    if (data):
         error = 'INVALID: You have already created a group with this name!'
         cursor.close()
         return group(error)
@@ -295,9 +308,10 @@ def makeGroup():
         # return redirect(url_for('home'))
         return redirect(url_for('group'))
 
+
 # Define route for tag_photo
 @app.route('/tag')
-def tag(error = ''):
+def tag(error=''):
     username = session['username']
     cursor = conn.cursor()
 
@@ -314,7 +328,8 @@ def tag(error = ''):
     else:
         return render_template('tag_photo.html', photos=userPosts, error=error)
 
-# Tag a username to a photo 
+
+# Tag a username to a photo
 @app.route('/tagPhoto', methods=['GET', 'POST'])
 def tagPhoto():
     username = session['username']
@@ -324,7 +339,7 @@ def tagPhoto():
         photoChosen = request.form['photoChosen']
     except:
         return tag('INVALID: You must pick a photo to tag user in!')
-    
+
     tagUser = request.form['tagUser']
 
     # check if entered username exists
@@ -333,7 +348,6 @@ def tagPhoto():
     cursor.execute(query, (tagUser))
     userFound = cursor.fetchone()
 
-    
     if (userFound):
         tagUser = userFound['username']
         visible = False
@@ -343,17 +357,17 @@ def tagPhoto():
         cursor.execute(query, (photoChosen, tagUser))
         tagUserFound = cursor.fetchone()
 
-        # found tagUser + photoID in Tag table 
+        # found tagUser + photoID in Tag table
         if (tagUserFound):
             cursor.close()
             return tag('INVALID: Tag has already been proposed before!')
 
         # user is self-tagging
         if (tagUser == username):
-            tagFlag = 1 # true (automatically accepted tag)
+            tagFlag = 1  # true (automatically accepted tag)
             visible = True
         else:
-            # check if photo is visible to tagUser 
+            # check if photo is visible to tagUser
             query = 'SELECT pID FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
             cursor.execute(query, (tagUser, tagUser))
             sharedPID = cursor.fetchall()
@@ -361,11 +375,11 @@ def tagPhoto():
 
             for pID in sharedPID:
                 if (str(pID['pID']) == photoChosen):
-                    tagFlag = 0 # false (not yet accepted tag)
-                    visible = True 
-            
+                    tagFlag = 0  # false (not yet accepted tag)
+                    visible = True
+
         if (visible):
-            # add tag to Tag table 
+            # add tag to Tag table
             ins = 'INSERT INTO Tag (pID, username, tagStatus) VALUES(%s, %s, %s)'
             cursor.execute(ins, (photoChosen, tagUser, tagFlag))
             conn.commit()
@@ -380,13 +394,14 @@ def tagPhoto():
         cursor.close
         return tag('INVALID: Username you entered does not exist!')
 
+
 # Define route for tag_photo
 @app.route('/tagPending')
-def tagPending(error = ''):
+def tagPending(error=''):
     username = session['username']
     cursor = conn.cursor()
 
-    # query for pending photos the user is tagged in 
+    # query for pending photos the user is tagged in
     query = 'SELECT pID, filePath, caption, postingDate FROM Photo NATURAL JOIN Tag WHERE tagStatus=%s AND username=%s ORDER BY postingDate DESC'
     cursor.execute(query, (0, username))
     pendingTags = cursor.fetchall()
@@ -405,12 +420,14 @@ def tagPending(error = ''):
     else:
         return render_template('tag_pendings.html', approvedTags=taggedPhotos, tags=pendingTags, error=error)
 
+
 # Check if pID is in list (used to check if user selected approve & decline)
 def isInList(pID, list):
     for i in list:
         if (i == pID):
             return True
     return False
+
 
 # Manage pending tags
 @app.route('/approveTag', methods=['GET', 'POST'])
@@ -428,7 +445,7 @@ def tagDecision():
             update = 'UPDATE Tag SET tagStatus=%s WHERE pID=%s AND username=%s'
             cursor.execute(update, (1, pID, username))
             conn.commit()
-    
+
     for pID in declined:
         # if pID is only in declined
         if (isInList(pID, approved) == False):
@@ -439,6 +456,7 @@ def tagDecision():
 
     cursor.close()
     return redirect('/tagPending')
+
 
 
 # Tab for looking at more information about the picture
@@ -464,7 +482,6 @@ def photoinfo(pID, error = ''):
     cursor.execute(query, pID)
     reacts = cursor.fetchall()
     conn.commit()
-
 
     cursor.close()
 
@@ -498,9 +515,71 @@ def photoreactorcomment(pID):
         conn.commit()
 
 
-
         cursor.close()
         return redirect(url_for('photoinfo', pID = pID))
+
+
+# Define route to follow a user
+@app.route('/newFollow')
+def newFollow(error=''):
+    if (error == ''):
+        return render_template('follow_user.html')
+    else:
+        return render_template('follow_user.html', error=error)
+
+# Inputs request of current user to follow another user
+@app.route('/follow', methods=['GET', 'POST'])
+def followUser():
+    userFollowing = session['username']
+    userToFollow = request.form['followName']
+
+    cursor = conn.cursor()
+    query = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 0)'
+    cursor.execute(query, (userFollowing, userToFollow))
+    conn.commit()
+    cursor.close()
+
+    return redirect(url_for('home'))
+
+# Define route to approve/reject follow requests
+@app.route('/viewRequests')
+def viewRequests(error=''):
+
+    username = session['username']
+    cursor = conn.cursor()
+
+    # Query to find the users requesting to follow the current user.
+    query = 'SELECT follower FROM follow WHERE followee = %s AND followStatus = 0'
+    cursor.execute(query, username)
+    requestedFollowers = cursor.fetchall()
+    conn.commit()
+
+    cursor.close()
+
+    if (error == ''):
+        return render_template('manage_follows.html', requestedFollowers=requestedFollowers)
+    else:
+        return render_template('manage_follows.html', requestedFollowers=requestedFollowers, error=error)
+
+# Manages list of requests others have made to follow the current user
+@app.route('/manageFollows', methods=['GET', 'POST'])
+def manageFollows():
+    followeeUser = session['username']
+    requestedFollowers = request.form.getlist('requestedFollowers')
+    followAction = request.form['followAction']
+
+    cursor = conn.cursor()
+    for followerUser in requestedFollowers:
+        query = 'DELETE FROM follow WHERE followee = %s AND follower = %s'
+        cursor.execute(query, (followeeUser, followerUser))
+        if (followAction == 'Accept'):
+            query = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 1)'
+            cursor.execute(query, (followerUser, followeeUser))
+
+    conn.commit()
+    cursor.close()
+
+    return redirect(url_for('home'))
 
 
 # Log out
@@ -508,10 +587,11 @@ def photoreactorcomment(pID):
 def logout():
     session.pop('username')
     return redirect('/')
-        
+
+
 app.secret_key = 'some key that you will never guess'
-#Run the app on localhost port 5000
-#debug = True -> you don't have to restart flask
-#for changes to go through, TURN OFF FOR PRODUCTION
+# Run the app on localhost port 5000
+# debug = True -> you don't have to restart flask
+# for changes to go through, TURN OFF FOR PRODUCTION
 if __name__ == "__main__":
-    app.run('127.0.0.1', 5000, debug = True)
+    app.run('127.0.0.1', 5000, debug=True)
