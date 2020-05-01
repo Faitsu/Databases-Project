@@ -439,6 +439,39 @@ def tagDecision():
 
     cursor.close()
     return redirect('/tagPending')
+  
+# Inputs request of current user to follow another user  
+@app.route('/follow', methods=['GET', 'POST'])
+def followUser():
+    userFollowing = session['username']
+    userToFollow = request.form['followName']
+
+    cursor = conn.cursor()
+    query = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 0)'
+    cursor.execute(query, (userFollowing, userToFollow))
+    conn.commit()
+    cursor.close()
+
+    return redirect(url_for('manage_follows'))
+
+# Manages list of requests others have made to follow the current user  
+@app.route('/manageFollows', methods=['GET', 'POST'])
+def manageFollows():
+    followeeUser = session['username']
+    requestedFollowers = request.form.getlist('requestedFollowers')
+    followAction = request.form['followAction']
+
+    cursor = conn.cursor()
+    for followerUser in requestedFollowers:
+        query = 'DELETE FROM follow WHERE followee = %s AND follower = %s'
+        cursor.execute(query, (followeeUser, followerUser))
+        if (followAction == 'Accept'):
+            query = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 1)'
+            cursor.execute(query, (followerUser, followeeUser))
+
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('manage_follows'))  
 
 # Log out
 @app.route('/logout')
