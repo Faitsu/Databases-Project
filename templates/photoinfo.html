@@ -1,0 +1,113 @@
+<html>
+<head>
+	<h1>WELCOME {{username}}</h1>  
+</head>
+<body>
+
+<p>PICTURE:  </p>
+
+<table>
+
+	<th>Posted Image</th>
+
+{% for Photo in Photos %}
+	<tr>
+
+		<td><img src="{{url_for('uploaded_file', filename=Photo.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
+
+	</tr>
+{%endfor%}
+</table>
+<br>
+<br>
+<table>
+
+	<th>pID</th>
+	<th>Caption</th>
+	<th>Posting Date</th>
+	<th>Poster</th>
+	<th>Poster First Name</th>
+	<th>Poster Last Name</th>
+
+{% for Photo in Photos %}
+	<tr>
+
+		<td>{{Photo.pID}}</td>
+		<td>{{Photo.caption}}</td>
+		<td>{{Photo.postingDate}}</td>
+		<td>{{Photo.poster}}</td>
+		<td>{{Photo.firstName}}</td>
+		<td>{{Photo.lastName}}</td>
+
+	</tr>
+{%endfor%}
+</table>
+
+
+<h2>Tagged:</h2>
+
+<table>
+
+	<th>Username</th>
+
+
+{% for tagged in tag %}
+	<tr>
+
+		<td>
+
+				{{tagged.username}}
+
+		</td>
+
+	</tr>
+{%endfor%}
+</table>
+
+
+<h2>Reacts:</h2>
+
+<table>
+
+	<th>Username</th>
+	<th>React Time</th>
+	<th>Comment</th>
+	<th>Emoji</th>
+
+{% for react in reacts %}
+	<tr>
+
+		<td>{{react.username}}</td>
+		<td>{{react.reactionTime}}</td>
+		<td>{{react.comment}}</td>
+		<td>{{react.emoji}}</td>
+
+
+	</tr>
+{%endfor%}
+</table>
+
+<br>
+{% for Photo in Photos %}
+<h2>React & Comment on this Photo:</h2>
+ <form action= "{{url_for('photoreactorcomment', pID = Photo.pID)}}" method="POST" enctype="multipart/form-data">
+        {% if error %}
+		    <p class="error"><strong>Error</strong> {{error}}</p>
+        {% endif %}
+<p>Comment:</p>
+<input type="text" name="comment" placeholder="Enter comment" required/> <br>
+	 <p>React:</p>
+<input type="text" name="emoji" placeholder="Enter emoji" required/> <br>
+	 <br>
+<input type="submit" value = 'Submit Comment & Reaction' />
+
+ </form>
+{%endfor%}
+<br>
+    <a href="/home">Go back</a>
+    <br>
+
+</body>
+
+
+</html>
