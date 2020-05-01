@@ -1,0 +1,43 @@
+<html>
+
+<head>
+    <h1> FOLLOW REQUESTS </h1>
+</head>
+
+<body>
+
+    <br>
+    <form action="/follow" method="POST" enctype="multipart/form-data">
+        <p> FOLLOW: </p>    
+        <label for="followUser" > Follow: </label><br>
+        <input type="text" name="followName" placeholder="Follow user: " required/> <br> <br>
+        
+        <br>
+        <input type="submit" value='Follow' />
+    
+        {% if error %}
+            <p class="error"> <strong> Error: </strong> {{error}}</p>
+        {% endif %}
+    </form>
+    <br>
+
+    <br>
+    <form action="/manageFollows" method="POST" enctype="multipart/form-data">
+        <p> YOUR FOLLOW REQUESTS: </p>
+        <label for="requestedFollowers"> These users are requesting to follow you: </label><br><br>
+        <select id="requestedFollowers" name="requestedFollowers" multiple>
+            {% for person in requestedFollowers %}
+                <option value={{person.follower}}>{{person.follower}}</option>
+            {% endfor %}
+        </select>
+        
+        <p> Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.</p>
+    
+        <br><br>
+        <input id="accept" type="submit" name="followAction" value="Accept" />
+        <br><br>
+        <input id="reject" type="submit" name="followAction" value="Reject" >/
+    </form>
+
+</body>
+</html>
