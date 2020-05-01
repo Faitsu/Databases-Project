@@ -65,6 +65,7 @@
 	<th>Caption</th>
 	<th>Posting Date</th>
 	<th>Who Can View</th>
+	<th>View More</th>
 
 {% for line in posts %}
 	<tr>
@@ -79,6 +80,7 @@
 				<p>Visible to members of designated friend groups</p>
 			{% endif %}
 		</td>
+		<td><a href="{{url_for('photoinfo', pID = line.pID)}}">VIEW MORE INFO</a></td>
 	</tr>
 {% endfor %}
 </table>
@@ -94,6 +96,7 @@
 	<th>Caption</th>
 	<th>Posting Date</th>
 	<th>Posted By</th>
+	<th>View More</th>
 
 {% for line in sharedPhotos %}
 	<tr>
@@ -102,6 +105,7 @@
 		<td>{{line.caption}}</td>
 		<td>{{line.postingDate}}</td>
 		<td>{{line.poster}}</td>
+		<td><a href="{{url_for('photoinfo', pID = line.pID)}}">VIEW MORE INFO</a></td>
 	</tr>
 {% endfor %}
 </table>

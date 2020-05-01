@@ -9,7 +9,9 @@ from werkzeug.utils import secure_filename
 import pymysql.cursors  # for interacting with database
 
 # Path for uploads folder
-UPLOAD_FOLDER = '/Users/moiraduya/PycharmProjects/Databases-Project/uploads'
+
+UPLOAD_FOLDER = '/Users/erica/Databases-Project/uploads'
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
 # Salt defined
@@ -21,9 +23,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Configure MySQL
 conn = pymysql.connect(host='localhost',
-                       port=8889,
+                       port = 3308,
                        user='root',
-                       password='root',
+                       password='',
                        db='FinstagramDB',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
@@ -455,6 +457,68 @@ def tagDecision():
     cursor.close()
     return redirect('/tagPending')
 
+
+
+# Tab for looking at more information about the picture
+@app.route('/photoInfo/<string:pID>')
+def photoinfo(pID, error = ''):
+    cursor = conn.cursor()
+    username = session['username']
+
+    # query for selecting what Photo is shown
+    query = 'SELECT pID, filePath, caption, postingDate, poster, firstName, lastName FROM photo JOIN person ON (photo.poster = person.username) WHERE pID = %s'
+    cursor.execute(query, pID)
+    photo = cursor.fetchall()
+    conn.commit()
+
+    #query for looking for who was tagged in the photo
+    query = 'SELECT username FROM Tag WHERE pID = %s AND tagStatus = 1'
+    cursor.execute(query, pID)
+    tag = cursor.fetchall()
+    conn.commit()
+
+    #query for looking for who reacted the photo
+    query = 'SELECT username, reactionTime, comment, emoji FROM reactto WHERE pID = %s'
+    cursor.execute(query, pID)
+    reacts = cursor.fetchall()
+    conn.commit()
+
+    cursor.close()
+
+    if (error == ''):
+        return render_template('photoinfo.html',username = username, Photos = photo, tag = tag, reacts = reacts)
+    else:
+        return render_template('photoinfo.html', username = username, Photos = photo , tag = tag, reacts = reacts, error=error)
+
+
+@app.route('/photoreactorcomment/<string:pID>', methods=['GET', 'POST'])
+def photoreactorcomment(pID):
+    username = session['username']
+    comment = request.form['comment']
+    emoji = request.form['emoji']
+
+    reactionTime = datetime.datetime.now()
+
+    cursor = conn.cursor()
+    query = 'SELECT * FROM reactto WHERE username = %s AND pID = %s'
+    cursor.execute(query,(username, pID))
+    data = cursor.fetchone()
+
+    error = None
+    if (data):
+        error = 'INVALID: You have already commented and reacted to this photo!'
+        cursor.close()
+        return photoinfo(pID,error)
+    else:
+        ins = 'INSERT INTO reactto (username,pID,reactionTime, comment,emoji) VALUES(%s, %s, %s,%s,%s)'
+        cursor.execute(ins, (username, pID, reactionTime, comment,emoji))
+        conn.commit()
+
+
+        cursor.close()
+        return redirect(url_for('photoinfo', pID = pID))
+
+
 # Define route to follow a user
 @app.route('/newFollow')
 def newFollow(error=''):
@@ -516,6 +580,7 @@ def manageFollows():
     cursor.close()
 
     return redirect(url_for('home'))
+
 
 # Log out
 @app.route('/logout')
