@@ -1,6 +1,6 @@
 <html>
 <head>
-	<h1>WELCOME {{username}}</h1>  
+	<h1>WELCOME {{username}}</h1>
 </head>
 <body>
 <form action="/post" method="POST" enctype="multipart/form-data">
@@ -12,9 +12,9 @@
 	<input type="file"
        id="avatar" name="filePath_img"
 	   accept="image/png, image/jpeg, image/jpg"></br>
-	   
+
 	<input type="text" name = "caption" placeholder="Enter a caption"/> </br>
-	
+
 
 
 	<p>Pick who you want to be able to view your photo:</p>
@@ -36,8 +36,8 @@
 	</select>
 
 	<p>Hold down the Ctrl (windows) or Command (Mac) button to select multiple options.
-	
-	
+
+
 	<br><br>
 	<input type="submit" value = Post />
 
@@ -53,7 +53,7 @@
 	table, th, td{
 		border: 1px solid black;
 	}
-</style> 
+</style>
 
 
 
@@ -73,7 +73,7 @@
 		<td>{{line.caption}}</td>
 		<td>{{line.postingDate}}</td>
 		<td>
-			{% if line.allFollowers == 1 %} 
+			{% if line.allFollowers == 1 %}
 				<p>Visible to all followers</p>
 			{% else %}
 				<p>Visible to members of designated friend groups</p>
@@ -118,7 +118,14 @@
 <a href="/tagPending">MANAGE PENDING TAGS</a>
 <br>
 <br>
+<a href="/newFollow">FOLLOW USERS</a>
+<br>
+<a href="/viewRequests">MANAGE FOLLOW REQUESTS</a>
+<br>
+<br>
 <a href="/logout">Logout</a>
+<br>
+<br>
 
 </body>
 
