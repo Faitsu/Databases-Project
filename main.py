@@ -532,12 +532,37 @@ def newFollow(error=''):
 def followUser():
     userFollowing = session['username']
     userToFollow = request.form['followName']
-
     cursor = conn.cursor()
-    query = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 0)'
-    cursor.execute(query, (userFollowing, userToFollow))
-    conn.commit()
-    cursor.close()
+
+    # check if they're trying to follow themselves
+    if (userToFollow == userFollowing):
+        cursor.close()
+        return newFollow('INVALID: You cannot follow yourself!')
+
+    # check if entered username exists
+    query = 'SELECT * FROM Person WHERE username = %s'
+    cursor.execute(query, (userToFollow))
+    userFound = cursor.fetchone()
+
+    if (userFound):
+
+        # check if they already requested to follow the user
+        query = 'SELECT followee FROM follow WHERE follower = %s'
+        cursor.execute(query, userFollowing)
+        followUserFound = cursor.fetchone()
+
+        if (followUserFound):
+            cursor.close()
+            return newFollow('INVALID: You have already requested to follow this user!')
+
+        userToFollow = userFound['username']
+        query1 = 'INSERT INTO follow (follower, followee, followStatus) VALUES (%s, %s, 0)'
+        cursor.execute(query1, (userFollowing, userToFollow))
+        conn.commit()
+
+    else:
+        cursor.close
+        return newFollow('INVALID: Username you entered does not exist!')
 
     return redirect(url_for('home'))
 
