@@ -1,29 +1,29 @@
 <html>
+
 <head>
+    <h1> SEARCH BY POSTER </h1>
 </head>
+
 <body>
 
+    <br>
+    <form action="/searchByPoster" method="POST" enctype="multipart/form-data">
+        <label for="searchByPoster" > Search: </label><br>
+        <input type="text" name="bloggerName" placeholder="Search by user: " required/> <br> <br>
 
-Whose posts would you like to see?
-<br>
+        <br>
+        <input type="submit" value='Search' />
 
-<form action="/show_posts" method="GET">
+        {% if error %}
+            <p class="error"> <strong> Error: </strong> {{error}}</p>
+        {% endif %}
+    </form>
+    <br>
 
-
-{% for line in user_list %}
-<input type="radio" name="poster" value={{line.username}}>{{line.username}}</input>
-	<br>
-{% endfor %}
-
-<input type="submit" value="View Posts">
-
-</form>
-
-
-
-<a href="/logout">Logout</a>
+    <br>
+    <a href="/home">Home</a>
+    <br>
+    <a href="/logout">Logout</a>
 
 </body>
-
-
 </html>
