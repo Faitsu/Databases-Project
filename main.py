@@ -436,6 +436,8 @@ def tagDecision():
     approved = request.form.getlist('decisionY')
     declined = request.form.getlist('decisionN')
 
+    decisionNY = False
+
     cursor = conn.cursor()
 
     for pID in approved:
@@ -445,7 +447,8 @@ def tagDecision():
             update = 'UPDATE Tag SET tagStatus=%s WHERE pID=%s AND username=%s'
             cursor.execute(update, (1, pID, username))
             conn.commit()
-
+        else:
+            decisionNY = True
     for pID in declined:
         # if pID is only in declined
         if (isInList(pID, approved) == False):
@@ -453,8 +456,11 @@ def tagDecision():
             delete = 'DELETE FROM Tag WHERE pID=%s AND username=%s'
             cursor.execute(delete, (pID, username))
             conn.commit()
-
+        else:
+            decisionNY = True
     cursor.close()
+    if(decisionNY):
+        return tagPending('INVALID: Cannot accept and decline tag(s)!')
     return redirect('/tagPending')
 
 
