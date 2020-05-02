@@ -517,6 +517,67 @@ def manageFollows():
 
     return redirect(url_for('home'))
 
+# Define a route to search by poster
+@app.route('/searchPoster')
+def searchPoster(error=''):
+    if (error == ''):  # no errors
+        return render_template('select_blogger.html')
+    else:
+        return render_template('select_blogger.html', error=error)
+
+# Search for photos visible to user and posted by a particular user
+@app.route('/searchByPoster', methods=['GET', 'POST'])
+def searchByPoster(error=''):
+    username = session['username']
+    bloggerSearch = request.form['bloggerName']
+    cursor = conn.cursor()
+
+    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s ORDER BY pID DESC'
+
+    cursor.execute(query, (username, bloggerSearch, username, bloggerSearch))
+    bloggerPosts = cursor.fetchall()
+    conn.commit()
+
+    cursor.close()
+
+    if (error == ''):
+        return render_template('show_posts.html', bloggerSearch=bloggerSearch, bloggerPosts=bloggerPosts)
+    else:
+        return render_template('show_posts.html', bloggerSearch=bloggerSearch, bloggerPosts=bloggerPosts, error=error)
+
+# Define a route to search by tag
+@app.route('/searchTag')
+def searchTag(error=''):
+    if (error == ''):  # no errors
+        return render_template('search_tag.html')
+    else:
+        return render_template('search_tag.html', error=error)
+
+# Search for photos visible to user and that tag a particular person
+@app.route('/searchByTag', methods=['GET', 'POST'])
+def searchByTag(error=''):
+    username = session['username']
+    tagSearch = request.form['taggedUser']
+    cursor = conn.cursor()
+
+    query = 'CREATE VIEW viewablePhotos AS SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
+    cursor.execute(query, (username, username))
+    conn.commit()
+
+    query1 = 'SELECT pID, filePath, caption, postingDate, poster FROM viewablePhotos WHERE pID IN (SELECT pID FROM Tag WHERE username = %s AND tagStatus = %s)'
+    cursor.execute(query1, (tagSearch, 1))
+    taggedPosts = cursor.fetchall()
+    conn.commit()
+
+    query2 = 'DROP VIEW viewablePhotos'
+    cursor.execute(query2)
+    conn.commit()
+
+    if (error == ''):
+        return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts)
+    else:
+        return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts, error=error)
+
 # Log out
 @app.route('/logout')
 def logout():
