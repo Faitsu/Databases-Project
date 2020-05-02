@@ -130,7 +130,7 @@ def home(error=''):
     conn.commit()
 
     # query for photos user can view
-    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
+    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND followStatus = 1 UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
     cursor.execute(query, (username, username))
     sharedPhotos = cursor.fetchall()
     conn.commit()
@@ -368,7 +368,7 @@ def tagPhoto():
             visible = True
         else:
             # check if photo is visible to tagUser
-            query = 'SELECT pID FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
+            query = 'SELECT pID FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND followStatus = 1 UNION SELECT pID FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
             cursor.execute(query, (tagUser, tagUser))
             sharedPID = cursor.fetchall()
             conn.commit()
