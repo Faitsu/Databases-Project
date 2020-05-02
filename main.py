@@ -621,13 +621,20 @@ def searchByPoster(error=''):
     bloggerSearch = request.form['bloggerName']
     cursor = conn.cursor()
 
-    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM Photo WHERE poster = %s AND poster =%s AND allFollowers = 1 ORDER BY pID DESC'
+    # check if entered username exists
+    query = 'SELECT * FROM Person WHERE username = %s'
+    cursor.execute(query, (bloggerSearch))
+    userFound = cursor.fetchone()
 
-    cursor.execute(query, (username, bloggerSearch, username, bloggerSearch,username,bloggerSearch))
-    bloggerPosts = cursor.fetchall()
-    conn.commit()
+    if (userFound):
+        query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s ORDER BY pID DESC'
+        cursor.execute(query, (username, bloggerSearch, username, bloggerSearch))
+        bloggerPosts = cursor.fetchall()
+        conn.commit()
 
-    cursor.close()
+    else:
+        cursor.close
+        return searchPoster('INVALID: Username you entered does not exist!')
 
     if (error == ''):
         return render_template('show_posts.html', bloggerSearch=bloggerSearch, bloggerPosts=bloggerPosts)
@@ -649,26 +656,33 @@ def searchByTag(error=''):
     tagSearch = request.form['taggedUser']
     cursor = conn.cursor()
 
-    query = 'CREATE VIEW viewablePhotos AS SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
-    cursor.execute(query, (username, username))
-    conn.commit()
+    # check if entered username exists
+    query = 'SELECT * FROM Person WHERE username = %s'
+    cursor.execute(query, (tagSearch))
+    userFound = cursor.fetchone()
 
-    query1 = 'SELECT pID, filePath, caption, postingDate, poster FROM viewablePhotos WHERE pID IN (SELECT pID FROM Tag WHERE username = %s AND tagStatus = %s)'
-    cursor.execute(query1, (tagSearch, 1))
-    taggedPosts = cursor.fetchall()
-    conn.commit()
+    if (userFound):
+        query = 'CREATE VIEW viewablePhotos AS SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
+        cursor.execute(query, (username, username))
+        conn.commit()
 
-    query2 = 'DROP VIEW viewablePhotos'
-    cursor.execute(query2)
-    conn.commit()
+        query1 = 'SELECT pID, filePath, caption, postingDate, poster FROM viewablePhotos WHERE pID IN (SELECT pID FROM Tag WHERE username = %s AND tagStatus = %s)'
+        cursor.execute(query1, (tagSearch, 1))
+        taggedPosts = cursor.fetchall()
+        conn.commit()
 
-    cursor.close()
+        query2 = 'DROP VIEW viewablePhotos'
+        cursor.execute(query2)
+        conn.commit()
+
+    else:
+        cursor.close
+        return searchTag('INVALID: Username you entered does not exist!')
 
     if (error == ''):
         return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts)
     else:
         return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts, error=error)
-
 
 # Define route for unfollow_person
 @app.route('/unfollow')
