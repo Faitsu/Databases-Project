@@ -9,13 +9,13 @@
 	}
 </style>
 
-Here are posts by {{bloggerSearch}}:
+Here are posts that tag {{tagSearch}}:
 
 <table>
 	<th>Time</th>
 	<th>Post</th>
 
-{% for line in bloggerPosts %}
+{% for line in taggedPosts %}
 	<tr>
         <td>{{line.pID}}</td>
 		<td><img src="{{url_for('uploaded_file', filename=line.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
@@ -28,7 +28,7 @@ Here are posts by {{bloggerSearch}}:
 
 <br>
 <br>
-<a href="/searchPoster">Select another blogger</a>
+<a href="/searchTag">Select for another tag</a>
 <br>
 <br>
 <a href="/home">Home</a>
