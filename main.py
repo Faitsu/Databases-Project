@@ -627,8 +627,8 @@ def searchByPoster(error=''):
     userFound = cursor.fetchone()
 
     if (userFound):
-        query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s ORDER BY pID DESC'
-        cursor.execute(query, (username, bloggerSearch, username, bloggerSearch))
+        query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM Photo WHERE poster = %s AND poster = %s AND allFollowers = 1 ORDER BY pID DESC'
+        cursor.execute(query, (username, bloggerSearch, username, bloggerSearch, username, bloggerSearch))
         bloggerPosts = cursor.fetchall()
         conn.commit()
 
