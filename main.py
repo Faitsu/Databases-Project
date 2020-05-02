@@ -130,8 +130,8 @@ def home(error=''):
     conn.commit()
 
     # query for photos user can view
-    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND followStatus = 1 UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s ORDER BY pID DESC'
-    cursor.execute(query, (username, username))
+    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND followStatus = 1 UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM Photo WHERE poster = %s AND allFollowers = 1 ORDER BY pID DESC '
+    cursor.execute(query, (username, username,username))
     sharedPhotos = cursor.fetchall()
     conn.commit()
 
@@ -596,9 +596,9 @@ def searchByPoster(error=''):
     bloggerSearch = request.form['bloggerName']
     cursor = conn.cursor()
 
-    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s ORDER BY pID DESC'
+    query = 'SELECT pID, filePath, caption, postingDate, poster FROM Follow JOIN Photo ON (Photo.poster = Follow.followee) WHERE follower = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM BelongTo NATURAL JOIN SharedWith NATURAL JOIN Photo WHERE username = %s AND poster = %s UNION SELECT pID, filePath, caption, postingDate, poster FROM Photo WHERE poster = %s AND poster =%s AND allFollowers = 1 ORDER BY pID DESC'
 
-    cursor.execute(query, (username, bloggerSearch, username, bloggerSearch))
+    cursor.execute(query, (username, bloggerSearch, username, bloggerSearch,username,bloggerSearch))
     bloggerPosts = cursor.fetchall()
     conn.commit()
 
