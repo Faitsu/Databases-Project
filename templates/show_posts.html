@@ -9,26 +9,29 @@
 	}
 </style>
 
-Here are posts by {{poster_name}}:
+Here are posts by {{bloggerSearch}}:
 
 <table>
 	<th>Time</th>
 	<th>Post</th>
 
-{% for line in posts %}
+{% for line in bloggerPosts %}
 	<tr>
-		<td>{{line.ts}}</td>
-		<td>{{line.blog_post}}</td>
+        <td>{{line.pID}}</td>
+		<td><img src="{{url_for('uploaded_file', filename=line.filePath)}}" alt="Uploaded Image" width="500" height="333"></td>
+		<td>{{line.caption}}</td>
+		<td>{{line.postingDate}}</td>
+		<td>{{line.poster}}</td>
 	</tr>
 {% endfor %}
 </table>
 
 <br>
 <br>
-<a href="/select_blogger">Select another blogger</a>
+<a href="/searchPoster">Select another blogger</a>
 <br>
 <br>
-<a href="/home">Post a message</a>
+<a href="/home">Home</a>
 <br>
 <br>
 <a href="/logout">Logout</a>
