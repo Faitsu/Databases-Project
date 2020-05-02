@@ -637,11 +637,59 @@ def searchByTag(error=''):
     cursor.execute(query2)
     conn.commit()
 
+    cursor.close()
+
     if (error == ''):
         return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts)
     else:
         return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts, error=error)
 
+
+# Define route for unfollow_person
+@app.route('/unfollow')
+def unfollow(error=''):
+    username = session['username']
+    cursor = conn.cursor()
+
+    # query for photos the user posted
+    query = 'SELECT followee FROM follow WHERE follower = %s AND followStatus = 1'
+    cursor.execute(query, (username))
+    followinginfo = cursor.fetchall()
+    conn.commit()
+
+    cursor.close()
+
+    if (error == ''):
+        return render_template('unfollow.html', following=followinginfo)
+    else:
+        return render_template('unfollow.html', following=followinginfo, error=error)
+
+
+@app.route('/unfollow_person', methods=['GET', 'POST'])
+def unfollow_person():
+    username = session['username']
+    cursor = conn.cursor()
+    # error if nothing is chosen for who to share photo with
+    try:
+        userChosen = request.form['userChosen']
+    except:
+        return tag('INVALID: You must pick a user to unfollow!')
+
+    query = 'DELETE FROM follow WHERE follower = %s AND followee = %s'
+    cursor.execute(query, (username,userChosen))
+    conn.commit()
+
+    query2 = 'DELETE FROM reactto WHERE username = %s AND pID IN(SELECT pID FROM photo WHERE poster = %s)'
+    cursor.execute(query2, (username, userChosen))
+    conn.commit()
+
+    query3 = 'DELETE FROM tag WHERE username = %s AND pID IN(SELECT pID FROM photo WHERE poster = %s)'
+    cursor.execute(query3, (username, userChosen))
+    conn.commit()
+
+    cursor.close()
+
+    return redirect(url_for('unfollow'))
 
 # Log out
 @app.route('/logout')

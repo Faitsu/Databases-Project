@@ -1,0 +1,31 @@
+<html>
+
+<head>
+    <h1>Unfollow Who?</h1>
+</head>
+<body>
+    <form action="/unfollow_person" method="POST" enctype="multipart/form-data">
+        {% if error %}
+		    <p class="error"><strong>Error</strong> {{error}}</p>
+        {% endif %}
+
+        <label for="following">Choose a person:</label><br><br>
+
+        {% for user in following %}
+            <input type="radio" value="{{user.followee}}" name="userChosen">
+                <label for="following"> {{user.followee}}</label><br>
+            </input><br><br>
+        {% endfor %}
+
+        <br>
+        <input type="submit" value = 'Unfollow' />
+    </form>
+
+    <br>
+    <a href="/home">Go back</a>
+    <br>
+    <a href="/logout">Logout</a>
+
+</body>
+
+</html>
