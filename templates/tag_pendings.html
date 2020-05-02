@@ -7,6 +7,10 @@
 <body>
     <form action="/approveTag" method="POST" enctype="multipart/form-data">
 
+        {% if error %}
+		    <p class="error"><strong>Error</strong> {{error}}</p>
+        {% endif %}
+
         <p>Approve or disprove the following tags (or do nothing):</p>
 
         {% for tag in tags %}
