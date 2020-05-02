@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <h1> SEARCH BY TAG </h1>
+</head>
+
+<body>
+
+    <br>
+    <form action="/searchByTag" method="POST" enctype="multipart/form-data">
+        <label for="searchByTag" > Search: </label><br>
+        <input type="text" name="taggedUser" placeholder="Search by tagged user: " required/> <br> <br>
+
+        <br>
+        <input type="submit" value='Search' />
+
+        {% if error %}
+            <p class="error"> <strong> Error: </strong> {{error}}</p>
+        {% endif %}
+    </form>
+    <br>
+
+    <br>
+    <a href="/home">Home</a>
+    <br>
+    <a href="/logout">Logout</a>
+
+</body>
+</html>
