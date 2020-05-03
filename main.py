@@ -497,6 +497,7 @@ def photoinfo(pID, error = ''):
         return render_template('photoinfo.html', username = username, Photos = photo , tag = tag, reacts = reacts, error=error)
 
 
+#code for adding reactions and comments to a photo
 @app.route('/photoreactorcomment/<string:pID>', methods=['GET', 'POST'])
 def photoreactorcomment(pID):
     username = session['username']
@@ -690,7 +691,7 @@ def searchByTag(error=''):
     else:
         return render_template('show_tags.html', tagSearch=tagSearch, taggedPosts=taggedPosts, error=error)
 
-# Define route for unfollow_person
+# Define route for Unfollow: a page for unfollowing people
 @app.route('/unfollow')
 def unfollow(error=''):
     username = session['username']
@@ -709,7 +710,7 @@ def unfollow(error=''):
     else:
         return render_template('unfollow.html', following=followinginfo, error=error)
 
-
+# Code for unfollowing a certain person
 @app.route('/unfollow_person', methods=['GET', 'POST'])
 def unfollow_person():
     username = session['username']
